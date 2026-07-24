@@ -61,3 +61,66 @@
  *       - That's it - your latest code is live on GitHub.
 */
 ```
+
+```js
+/**
+ * Node Version Management Setup:
+ * - Imagine you're working in a team and you've got multiple projects like:
+ *   a. Project-A (uses Node.js 18)
+ *   b. Project-B (uses Node.js 20)
+ * - Now, if you try to use one single Node version for both, it can break your code. 
+ * - That's why we need NVM (Node Version Manager) - it help use switch Node.js 
+ *   versions per project.
+ * - Basically - you can have multiple Node versions on your system and use whichever 
+ *   you want, anytime!
+ * 
+ * 1. Install NVM:
+ *    - If you haven't already installed it:
+ *      - windows: download from nvm-windows released page (github)
+ *      - Then verify: nvm --version
+ * 
+ * 2. Create a .nvmrc file
+ *    - Inside your project folder, create a new file: .nvmrc
+ *    - This file tells NVM which Node.js version your project uses.
+ *    - For example: 20.15.0
+ *    - Think of .nvmrc like a little note that say:
+ *      " Hey developer, please use Node 20 for this project! "
+ * 
+ * 3. Check Installed Node Versions:
+ *    - See what Node versions are currently installed: nvm ls
+ *    - If you don't see the version mentioned in .nvmrc, you'll have to install it
+ * 
+ * 4. Install required Node Version:
+ *    - nvm install v22.10.0
+ *    - NVM will download and set it up for you
+ * 
+ * 5. Switch to that version:
+ *    - Now switch Node.js to the version mentioned in .nvmrc: nvm use
+ *    - (If NVM gives an error like "A version argument is required but missing - that
+ *      means you didn't install the version yet, so go back and install using the 
+ *      previous command)
+ *    - After that: node -v
+ *    - You'll see it now matches the version inside .nvmrc
+ * 
+ * 6. Example Flow:
+ *    # Inside project folder
+ *    touch .nvmrc
+ * 
+ *    # Add version number inside file → 22.10.0
+ *    nvm ls
+ *    nvm install v22.10.0
+ *    nvm use v22.10.0
+ *    node -v
+ * 
+ *    Now your project runs with Node v22.10.0
+ *    
+ * 7. Commit & push .nvmrc to the repo:
+ *    - Go to source contol > auth-service
+ *    - Add to stage: 
+ *      - Click plus button
+ *      - Comment: add .nvmrc
+ *      - Commit
+ *    - Push it to github:
+ *      - Click on sync changes
+*/
+```
