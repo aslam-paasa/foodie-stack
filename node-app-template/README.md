@@ -217,3 +217,67 @@
  *      - Click on sync changes
 */ 
 ```
+
+```js
+/**
+ * Configuring TypeScript in Your Project:
+ * - TypeScript adds type checking to JavaScript, helping catch errors early:
+ *   - JavaScript only shows errors when running the code (runtime)
+ *   - TypeScript shows errors while writing code (compile time)
+ *   - Benefits: Fewer bugs, cleaner code, better development experience
+ * 
+ * 1. Install TypeScript:
+ *    a. Run this command in your terminal:
+ *       - Command: npm install -D typescript
+ *       - This installs the TypeScript compiler
+ *       - The -D flag marks it as a development dependency
+ *    
+ * 2. Create Your First TypeScript File:
+ *    a. Rename server.js to server.ts
+ *    b. Add this example code to test TypeScript:
+ * 
+ *       function welcome(name: string) {
+ *           console.log(`Welcome ${name} to our TypeScript project!`);
+ *       }
+ *       welcome("Developer");
+ * 
+ *       - Notice the `: string` - this tells TypeScript that name must be a string
+ *       - Try passing a number instead - TypeScript will show an error immediately!
+ * 
+ * 3. Configure TypeScript:
+ *    a. Create the configuration file:
+ *       - Command: npx tsc --init
+ *    b. This creates tsconfig.json - it tells TypeScript how to:
+ *       - Which files to compile
+ *       - Where to put the output
+ *       - What JavaScript version to target
+ *       - And many other options
+ * 
+ * 4. Add Node.js Type Definitions:
+ *    a. Install the types package:
+ *       - Command: npm install -D @types/node
+ *    b. This helps TypeScript understand Node.js built-in features like:
+ *       - File system (fs)
+ *       - Path handling
+ *       - HTTP modules
+ *       - And more
+ * 
+ * 5. Compile Your Code:
+ *    a. Run the TypeScript compiler:
+ *       - Command: npx tsc
+ *    b. This will:
+ *       - Create a dist/ folder
+ *       - Convert your .ts files to .js
+ *       - Follow the rules in tsconfig.json
+ * 
+ * 6. Run Your Code:
+ *    a. Execute the compiled JavaScript:
+ *       - Command: node dist/server.js
+ *    b. You should see your welcome message!
+ * 
+ * Now you have a working TypeScript setup! Each time you make changes:
+ * 1. Write your TypeScript code
+ * 2. Run `npx tsc` to compile
+ * 3. Run `node dist/server.js` to execute
+*/
+```
