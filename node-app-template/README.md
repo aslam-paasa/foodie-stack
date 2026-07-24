@@ -330,3 +330,118 @@
  *      npx prettier --write src/server.ts
  */
 ```
+
+```js
+/**
+ * Integrating Eslint into Your Workflow:
+ * - You're writing code, and you forgot a semicolon, or maybe you use a bad practice 
+ *   like using var instead of let... 
+ * - ESLint automatically scans the code, finds problems, and tells you what to fix.
+ * - It's like a code reviewer who never sleeps
+ * - In short:
+ *   a. ESLint = "Code quality police"
+ *   b. Helps you follow best practices
+ *   c. Catches bugs, typos, and anti-patterns early
+ *   d. Works beautifully with TypeScript + Prettier
+ * 
+ * 1. Installation:
+ *    - Command: npm install --save-dev eslint @eslint/js @types/eslint__js typescript-eslint
+ *      a. eslint: the main tool that checks your code
+ *      b. @eslint/js: built-in recommended rules for JS
+ *      c. typescript-eslint: makes ESLint understand TypeScript syntax
+ * 
+ * 2. Create ESLint Config File:
+ *    - Create a file called eslint.config.mjs in your project root.
+ *    - Now add this basic setup: 
+ * 
+ *      // @ts-check
+ * 
+ *      import eslint from '@eslint/js';
+ *      import { defineConfig } from 'eslint/config';
+ *      import tseslint from 'typescript-eslint';
+ *      
+ *      export default defineConfig(
+ *        eslint.configs.recommended,
+ *        tseslint.configs.recommended
+ *      );
+ *      
+ *    - What this does:
+ *      - Uses ESLint's recommended rules
+ *      - Adds TypeScript's recommended rules
+ *      - Keeps your code clean and consistent
+ * 
+ * 3. Run ESLint for the first time
+ *    - Command: npx eslint .
+ *    - If you see it scanning dist/ or node_modules and throwing a bunch of errors
+ *    - no worries, we'll fix that next
+ * 
+ * 4. Ignore unwanted folders
+ *    - Let's stop ESLint from scanning unnecessary files like dist or node_modules
+ *    - Update your eslint.config.mjs like this:
+ * 
+ *      // @ts-check
+ * 
+ *      import eslint from '@eslint/js';
+ *      import { defineConfig } from 'eslint/config';
+ *      import tseslint from 'typescript-eslint';
+ *      
+ *      export default defineConfig(
+ *        eslint.configs.recommended,
+ *        tseslint.configs.recommended,
+ *        {
+ *          ignores: ['dist', 'node_modules', 'eslint.config.mjs']
+ *        }
+ *      );
+ *    - Now ESLint will skip those folders while checking your code.
+ * 
+ * 5. Enable Linting with Type Information (Advanced Setup)
+ *    - If you want ESLint to fully understand your TypeScript types,
+ *      not just syntax - then use this version (type-aware linting).
+ * 
+ *    // @ts-check
+ * 
+ *    import eslint from '@eslint/js';
+ *    import { defineConfig } from 'eslint/config';
+ *    import tseslint from 'typescript-eslint';
+ * 
+ *    export default defineConfig(
+ *    eslint.configs.recommended,
+ *    tseslint.configs.recommended,
+ *    tseslint.configs.recommendedTypeChecked,
+ *       {
+ *          ignores: ['dist', 'node_modules', 'eslint.config.mjs'],
+ *       },
+ *       {
+ *          languageOptions: {
+ *             parserOptions: {
+ *             projectService: true,
+ *             },
+ *          },
+ *          rules: {
+ *             "no-console": "error"
+ *          }
+ *       }
+ *    );
+ * 
+ *    - Explanation:
+ *      - recommendedTypeChecked: gives ESLint type-level power
+ *      - ignores: folders/files to skip
+ *      - no-console: throws error if you use console.log
+ *        (you can customize or remove this rule)
+ * 
+ * 6. Add ESLint Scripts to package.json:
+ *    - Open your package.json and add these under "scripts":
+ * 
+ *    "scripts": {
+ *       "dev": "node src/server.js",
+ *       "test": "echo \"Error: no test specified\" && exit 1",
+ *       "format": "prettier . --write",
+ *       "format:check": "prettier . --check",
+ *       "lint:check": "eslint .",
+ *       "lint:fix": "eslint . --fix"
+ *    }
+ * 
+ *    - Run lint check: npm run lint:check
+ *    - Auto-fix error: npm run lint:fix
+*/
+```
