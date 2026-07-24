@@ -165,3 +165,55 @@
  *      b. Update NVM and confirm the successful update with a terminal command.
 */
 ```
+
+```js
+/**
+ * NodeJs Project Setup:
+ * - Imagine we're about to create a mini backend project called auth-service .
+ * - This will handle user login, signup, etc.
+ * 
+ * 1. Create Project Folder Structure:
+ *    a. Open your VS Code (or terminal)
+ *    b. Create a new folder for your service, for example:
+ *       - auth-service
+ *    c. Go inside the folder:
+ *       - cd auth-service
+ *    d. Now create a src folder 
+ *       - mkdir src
+ *    e. Inside src, create a file named server.js:
+ *       - touch src/server.js
+ *       - This src/server.js file will be the entry point for your app - this is where our server will start.
+ * 
+ * 2. Initialize the Project with NPM
+ *    a. Run this command: npm init
+ *       - package name: auth-service (default)
+ *       - version: (1.0.0) 
+ *       - description: The user management service
+ *       - entry point: (index.js)
+ *       - test command:
+ *       - git repository:
+ *       - keywords:
+ *       - author: Mohammad <aslampaasa421@gmail.com>
+ *       - licence: (ISC)
+ *       - package created!
+ * 
+ * 3. Add scripts in package.json:
+ *    - Now open your package.json file
+ *    - Inside, look for the "scripts" section and make it look like this:
+ *      - "scripts": {
+ *          "dev": "node src/server.js",
+ *          "test": "echo \"Error: no test specified\" && exit 1"
+ *        }
+ *    - The "dev" script helps us run our server with:
+ *      - npm run dev
+ * 
+ * 4. Commit & push to GitHub
+ *    - Go to source contol > auth-service
+ *    - Add to stage: 
+ *      - Click plus button
+ *      - Comment: add package.json
+ *      - Commit
+ *    - Push it to github:
+ *      - Click on sync changes
+*/ 
+```
