@@ -1,0 +1,52 @@
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "The user management service",
+  "license": "ISC",
+  "author": "Mohammad Aslam <aslampaasa421@gmail.com>",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec tsx src/server.ts",
+    "format:fix": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "jest --watch --runInBand",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.7.8",
+    "@types/supertest": "^7.2.1",
+    "@types/winston": "^2.4.4",
+    "eslint": "^9.13.0",
+    "husky": "^9.1.6",
+    "jest": "^30.4.2",
+    "lint-staged": "^15.2.10",
+    "nodemon": "^3.1.14",
+    "prettier": "3.3.3",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
+    "tsx": "^4.23.1",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.11.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "npm run format:fix",
+      "npm run lint:fix"
+    ]
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "http-errors": "^2.0.1",
+    "winston": "^3.19.0"
+  }
+}
