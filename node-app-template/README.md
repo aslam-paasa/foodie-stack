@@ -579,28 +579,28 @@
  *    - Database credentials (username, password, connection string)
  *    - API keys for external services
  *    - Other environment-specific variables
- * 
+ *
  * 2. Best Practices for Configuration:
  *    - Never hardcode sensitive information directly in your code
  *    - Use environment variables (.env files) or configuration files
  *    - Keep all config values in a centralized location
  *    - Validate configuration values on application startup
- * 
+ *
  * 3. For this service, we will:
  *    - Set up environment variables using .env files
  *    - Create a central config management system
  *    - Learn how to securely store and access configuration values
  *    - Implement configuration validation
- * 
+ *
  * 4. Environment Variables Setup:
  *    a. Install dotenv package to handle environment variables: npm install dotenv --save
- * 
+ *
  *    b. Create configuration files:
  *       - Create a `.env` file in the root folder
  *       - Add these basic environment variables:
  *         PORT=3000
  *         NODE_ENV=development
- * 
+ *
  *    c. Set up configuration management:
  *       - Create a `config` folder inside `src`
  *       - Create `index.ts` inside config folder
@@ -608,19 +608,66 @@
  *         - Read all environment variables
  *         - Export them in a structured way
  *         - Be the single source of configuration for the app
- * 
+ *
  *          import { config } from 'dotenv'
  *          config()
- * 
+ *
  *          const { PORT, NODE_ENV } = process.env
- * 
+ *
  *          export const Config = {
  *             PORT,
  *             NODE_ENV,
  *          }
- *       
+ *
  *    d. Available configurations:
  *       - PORT: The port number where server will run
  *       - NODE_ENV: Application environment (development/production/test)
-*/ 
+ */
+```
+
+```js
+/**
+ * ExpressJS App Configuration:
+ * a. Install required packages:
+ *    - npm install express --save
+ *    - npm install -D @types/express
+ *    - npm i -D nodemon ts-node
+ *    - "scripts": {
+ *         "dev": "nodemon src/server.ts",
+ *       }
+ * b. Create configuration files:
+ *    - Create `app.ts` inside `src` folder
+ *    - Add basic Express setup:
+ *
+ *      App.ts:
+ *       import express from 'express'
+ *
+ *       const app = express()
+ *
+ *       app.get('/', (req, res) => {
+ *          res.send('Welcome to Auth Service')
+ *       })
+ *
+ *       export default app
+ *
+ *      Server.ts:
+ *       import { Config } from './config/index.js'
+ *       import app from './app.js'
+ *
+ *       const startServer = () => {
+ *          const PORT = Config.PORT
+ *          try {
+ *             app.listen(PORT, () => {
+ *                   console.log(`Server is running on port $
+ *                   {PORT}`)
+ *             })
+ *          } catch (err) {
+ *             console.error(err)
+ *             process.exit(1)
+ *          }
+ *       }
+ *
+ *       startServer()
+ *
+ */
 ```
