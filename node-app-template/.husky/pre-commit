@@ -1,2 +1,2 @@
-echo "PRE-COMMIT HOOK EXECUTED"
+echo "HOOK WORKS"
 exit 1
