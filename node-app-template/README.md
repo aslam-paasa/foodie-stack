@@ -854,3 +854,97 @@ Setting Up a Logger:
       })
 */
 ```
+
+```js
+/**
+ * Implementing Error Handling:
+ * - Global Error Handler ka use kar k humare application k andr jo v errors
+ *   aa rhe hai usko hum catch kar sakte hai
+ * - Create a middleware at the end of app.ts file:
+ *   - Install: npm i http-errors
+ *              npm i -D @types/http-errors
+ *   - Jab v humein http error throw karna hoga to hum iss package ka use karnge
+ * 
+ *       app.get('/', (req, res) => {
+ *          const err = createHttpError(401, "You cannot access this route")
+ *          throw err
+ *          res.send('Welcome to Auth Service')
+ *       })
+ * 
+ *       
+ *        // global error handler
+ * 
+ *       // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ *       app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+ *          logger.error(err.message)
+ *          const statusCode = err.statusCode || 500;
+ * 
+ *          res.status(statusCode).json({
+ *             errors: [
+ *                   {
+ *                      type: err.name,
+ *                      msg: err.message,
+ *                      path: "",
+ *                      location: ""
+ *                   }
+ *             ]
+ *          })
+ *       })
+ * 
+ * 
+ * - But there is a catch, if we use async in our api then server will crash 
+ *   instead of error handling
+ * 
+ *   app.get('/', async (req, res) => {
+ *       const err = createHttpError(401, "You cannot access this route")
+ *       throw err
+ *       res.send('Welcome to Auth Service')
+ *   })
+ * 
+ *   // global error handler 
+ *   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ *   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+ *       logger.error(err.message)
+ *       const statusCode = err.statusCode || 500;
+ *   
+ *       res.status(statusCode).json({
+ *           errors: [
+ *               {
+ *                   type: err.name,
+ *                   msg: err.message,
+ *                   path: "",
+ *                   location: ""
+ *               }
+ *           ]
+ *       })
+ *   })
+ * 
+ * - Solution: Instead of 'throw err', pass third param i.e. next jisko hum 
+ *   call kar denge jo error check karega.
+ * 
+ *    app.get('/', async (req: Request, res: Response, next: NextFunction) => {
+ *       const err = createHttpError(401, "You cannot access this route")
+ *       next(err)
+ *       // res.send('Welcome to Auth Service')
+ *    })
+ * 
+ *    // global error handler
+ * 
+ *    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ *    app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+ *       logger.error(err.message)
+ *       const statusCode = err.statusCode || 500;
+ * 
+ *       res.status(statusCode).json({
+ *          errors: [
+ *                {
+ *                   type: err.name,
+ *                   msg: err.message,
+ *                   path: "",
+ *                   location: ""
+ *                }
+ *          ]
+ *       })
+ *    })
+
+```
