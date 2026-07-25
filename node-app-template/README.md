@@ -571,5 +571,56 @@
  */
 ```
 
-    "husky": "^9.1.6",
-    "lint-staged": "^15.2.10",
+```js
+/**
+ * Configuring Application Settings:
+ * 1. Every application needs different configuration settings:
+ *    - Port number where the server runs
+ *    - Database credentials (username, password, connection string)
+ *    - API keys for external services
+ *    - Other environment-specific variables
+ * 
+ * 2. Best Practices for Configuration:
+ *    - Never hardcode sensitive information directly in your code
+ *    - Use environment variables (.env files) or configuration files
+ *    - Keep all config values in a centralized location
+ *    - Validate configuration values on application startup
+ * 
+ * 3. For this service, we will:
+ *    - Set up environment variables using .env files
+ *    - Create a central config management system
+ *    - Learn how to securely store and access configuration values
+ *    - Implement configuration validation
+ * 
+ * 4. Environment Variables Setup:
+ *    a. Install dotenv package to handle environment variables: npm install dotenv --save
+ * 
+ *    b. Create configuration files:
+ *       - Create a `.env` file in the root folder
+ *       - Add these basic environment variables:
+ *         PORT=3000
+ *         NODE_ENV=development
+ * 
+ *    c. Set up configuration management:
+ *       - Create a `config` folder inside `src`
+ *       - Create `index.ts` inside config folder
+ *       - This file will:
+ *         - Read all environment variables
+ *         - Export them in a structured way
+ *         - Be the single source of configuration for the app
+ * 
+ *          import { config } from 'dotenv'
+ *          config()
+ * 
+ *          const { PORT, NODE_ENV } = process.env
+ * 
+ *          export const Config = {
+ *             PORT,
+ *             NODE_ENV,
+ *          }
+ *       
+ *    d. Available configurations:
+ *       - PORT: The port number where server will run
+ *       - NODE_ENV: Application environment (development/production/test)
+*/ 
+```

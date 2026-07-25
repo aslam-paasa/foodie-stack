@@ -4,7 +4,7 @@
   "description": "The user management service",
   "license": "ISC",
   "author": "Mohammad Aslam <aslampaasa421@gmail.com>",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "node src/server.ts",
@@ -20,8 +20,8 @@
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^22.7.8",
     "eslint": "^9.13.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "prettier": "3.3.3",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.11.0"
@@ -31,5 +31,8 @@
       "npm run format:fix",
       "npm run lint:fix"
     ]
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }
