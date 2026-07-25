@@ -10,4 +10,4 @@ function welcome(name: string) {
   return name + first_name;
 }
 
-welcome('Chaudhary');
+welcome('Hussain');
