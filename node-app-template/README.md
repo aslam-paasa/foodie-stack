@@ -671,3 +671,186 @@
  *
  */
 ```
+
+```js
+/**
+Setting Up a Logger:
+1. Why logging?
+   - Track what your app does (requests, jobs, errors)
+   - Debugging & monitoring - logs help you reproduce issues
+   - Observability - useful for production troubleshooting and audits
+
+2. Why not console.log() in production?
+   - Slower and can block I/O
+   - No built-in levels (info/warn/error)
+   - Logs are ephemeral (gone after restart) and hard to filter
+   - No file/rotation/remote transport support
+
+3. Use Winston - install
+   - npm i winston
+   - npm i -D @types/winston
+
+4. Minimal, beginner-friendly Winston Setup (TS)
+   - Create src/config/logger.ts:
+      import winston from 'winston';
+
+      const logger = winston.createLogger({
+         level: 'info',
+         defaultMeta: {
+            serviceName: 'auth-service',
+         },
+         transports: [
+            new winston.transports.Console({
+                  level: 'info',
+                  format: winston.format.json(),
+            }),
+         ]
+      })
+
+      export default logger;
+
+   - Explanation:
+     a. import winston from 'winston'
+        - This imports the Winston library
+        - Winston is a logging tool (way better than console.log) that supports log levels, 
+          formats, and multiple outputs (called transports)
+
+     b. const logger = winston.createLogger({})
+        - createLogger() makes a new instance. Think of it as your app's logging engine.
+        - You configure behavior (levels, metadata, transports) inside the { ... }
+
+     c. level: 'info'
+        - This tells Winston which level of messages it should show:
+          - error: something broke like database down
+          - warn : warning, not a crash like low disk space
+          - info : Normal info like Server started
+          - debug: Developer-only detail like User object: {...}
+        - If we set level: 'info', then only info, warn and error logs will appear.
+        - debug logs will be ignored unless we change it.
+
+     d. defaultMeta: { serviceName: 'auth-service' }
+        - This adds extra information automatically to every log.
+        - For example, if your log says:
+          { "level": "info", "message": "Server started" }
+        - Then winston will automatically add this meta info:
+          { "level": "info", "message": "Server started", "serviceName": "auth-service" }
+        - Useful when you have many microservices like (auth-service, user-service, 
+          payment-service) so you can tell where each log came from.
+
+     e. transports: [ ... ]
+        - Think of transports as where your logs go.
+        - You can send logs to:
+          - Console (your terminal)
+          - Files (like error.log)
+          - Cloud logging tools (like Datalog or AWS CloudWatch)
+        - Right now, we're just sending them to the console.
+        - Inside the console transport:
+
+            new winston.transports.Console({
+               level: 'info',
+               format: winston.format.json(),
+            })
+
+        - Let's break this mini block too:
+          - new winston.transports.Console() tells Winston to print logs on screen
+          - level: 'info', same idea as before, only log info and above
+          - format: winston.format.json(), logs appear in JSON format, like this:
+               {"level":"info","message":"Server started","serviceName":"auth-service"}
+          - JSON is machine-friendly and used in real-production systems
+
+     f. export default logger:
+        - This simply makes your logger across your project
+
+     g. Import and use it in server.ts:
+        - logger.info - 
+          {
+             "level": "info",
+             "message": "Server is running on port 5555",
+             "serviceName": "auth-service"
+          }
+        - logger.error
+         import app from './app'
+         import { Config } from './config/index'
+         import logger from './config/logger'
+
+         const startServer = () => {
+            const PORT = Config.PORT
+            try {
+               app.listen(PORT, () => logger.info(`Server is running on port ${PORT}`))
+            } catch (err) {
+               logger.error('Failed to start server:', err)
+               process.exit(1)
+            }
+         }
+         startServer()
+
+   - How can we store the logs in a file?
+     - Add new transport: new winston.transports.File({})
+         import winston from 'winston';
+
+         const logger = winston.createLogger({
+            level: 'info',
+            defaultMeta: {
+               serviceName: 'auth-service',
+            },
+            transports: [
+               new winston.transports.File({
+                     level: 'info',
+                     dirname: 'logs',
+                     filename: 'app.log',
+                     format: winston.format.combine(
+                        winston.format.timestamp(), 
+                        winston.format.json()
+                     ),
+               }),
+               new winston.transports.Console({
+                     level: 'info',
+                     format: winston.format.combine(
+                        winston.format.timestamp(), 
+                        winston.format.json()
+                     ),
+               }),
+            ]
+         })
+
+         export default logger;
+
+   - How to silent the logs during testing?
+      const logger = winston.createLogger({
+         level: 'info',
+         defaultMeta: {
+            serviceName: 'auth-service',
+         },
+         transports: [
+            new winston.transports.File({
+                  level: 'info',
+                  dirname: 'logs',
+                  filename: 'combined.log',
+                  format: winston.format.combine(
+                     winston.format.timestamp(), 
+                     winston.format.json()
+                  ),
+                  silent: false,
+            }),
+            new winston.transports.File({
+                  level: 'error',
+                  dirname: 'logs',
+                  filename: 'error.log',
+                  format: winston.format.combine(
+                     winston.format.timestamp(), 
+                     winston.format.json()
+                  ),
+                  silent: false,
+            }),
+            new winston.transports.Console({
+                  level: 'info',
+                  format: winston.format.combine(
+                     winston.format.timestamp(), 
+                     winston.format.json()
+                  ),
+                  silent: Config.NODE_ENV === 'test',
+            }),
+         ]
+      })
+*/
+```
