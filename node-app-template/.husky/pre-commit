@@ -1,1 +1,2 @@
-npm test
+echo "HOOK WORKS"
+exit 1
