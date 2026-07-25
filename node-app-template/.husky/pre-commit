@@ -1,2 +1,1 @@
-echo "HOOK WORKS"
-exit 1
+npx lint-staged
