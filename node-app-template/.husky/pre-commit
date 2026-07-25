@@ -1,5 +1,2 @@
-#!/usr/bin/env sh
-
-echo "🚀 PRE-COMMIT HOOK EXECUTED"
-
+echo "PRE-COMMIT HOOK EXECUTED"
 exit 1
