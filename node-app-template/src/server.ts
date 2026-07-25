@@ -6,8 +6,8 @@ function welcome(name: string) {
     }
 
     const first_name = user['name']
-    
+
     return name + first_name
 }
 
-welcome('Aslam');
+welcome('Mohammad');
