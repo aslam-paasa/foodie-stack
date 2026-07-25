@@ -445,3 +445,128 @@
  *    - Auto-fix error: npm run lint:fix
 */
 ```
+
+```js
+/**
+ * Implementing Git Hooks (with Husky + Lint-Staged):
+ * 
+ * 1. What are Git Hooks?
+ *    - Imagine you're working in a team (or even solo) and you want to 
+ *      make sure only clean, formatted, linted code goes into your GitHub repo.
+ *    - Now... you don't want unformatted or buggy code to sneak in before a commit,
+ *      right? That's where Git Hooks come in.
+ * 
+ *    "Git Hooks are custom scripts that run automatically at specific points in your
+ *     git workflow - like before you make a commit, before you push, etc."
+ * 
+ *    - We'll use the pre-commit hook - this one runs right before your code is 
+ *      committed.
+ *    - And we'll make it:
+ *      a. Run ESLint for linting
+ *      b. Run Prettier for formatting
+ *      c. And only check changed files for faster performance
+ * 
+ * 2. Install Husky:
+ *    - Husky helps us easily manage git hooks in Nodejs projects:
+ *      npm install --save-dev husky
+ * 
+ *    - Why husky?
+ *      Normally, Git Hooks are tricky to manage - Husky makes them super simple and 
+ *      consistent across machines.
+ * 
+ * 3. Initialize Husky:
+ *    - Run this command: npx husky init (create hook)
+ *    - This will:
+ *      a. Create a .husky/ folder in your project root
+ *      b. Add a default pre-commit file inside it
+ *    - Your folder structure will now look like this: 
+ *      .husky/
+ *       ├── _
+ *       └── pre-commit
+ * 
+ * 4. Configure the pre-commit Hook:
+ *    - Open the file .husky/pre-commit - this is the script that runs before
+ *      each commit
+ *    - Add this line to it: npx lint-staged
+ *    - What this means:
+ *      "Before committing, Husky will trigger lint-staged, which will check
+ *       and format only staged (changed) files."
+ * 
+ * 5. Install lint-staged:
+ *    - We'll use lint-staged to avoid running ESLint and Prettier on the entire
+ *      project - it'll only run them on files that have changed.
+ *    - Install it: npm install --save-dev lint-staged
+ * 
+ * 6. Add lint-staged Configuration:
+ *    - Open your package.json and add this section:
+ * 
+ *      "lint-staged": {
+ *        "*.ts": ["prettier --list-different", "eslint"]
+ *      }
+ * 
+ *    - Explanation:
+ *      - "*.ts" - Target all typescript files
+ *      - "prettier --list-different" - Checks if formatting is correct
+ *      - "eslint" - Runs ESLint to check code quality
+ *    - This means whenever you try to commit:
+ *      a. Lint-Staged grabs only the changed .ts files
+ *      b. Runs Prettier and ESLint on them
+ *      c. Stops commit if issues are found
+ * 
+ * 7. Connect Everything
+ *    - Your .husky/pre-commit file should now look like this:
+ *      npx lint-staged
+ *    - That's it!
+ * 
+ *    - Now, before any commit happens, 
+ *      Husky -> runs Lint-Staged -> which runs ESLint + Prettier.
+ *    - If something fails (like linting errors or bad formatting), 
+ *      the commit is blocked.
+ * 
+ * 8. Example Full Setup Recap:
+ *    - Your Project should have:
+ *       ├── .husky/
+ *       │   ├── _
+ *       │   └── pre-commit
+ *       ├── package.json
+ *       ├── eslint.config.mjs
+ *       ├── .prettierrc
+ *       ├── .prettierignore
+ *       └── src/     
+ *    - Your package.json scripts might look like this:
+ *       "scripts": {
+ *          "dev": "node src/server.js",
+ *          "format": "prettier . --write",
+ *          "format:check": "prettier . --check",
+ *          "lint:check": "eslint .",
+ *          "lint:fix": "eslint . --fix",
+ *          "prepare": "husky"
+ *       },
+ *          "lint-staged": {
+ *          "*.ts": ["prettier --list-different", "eslint"]
+ *       }
+ *    - The "prepare": "husky" script ensures Husky is automatically setup whenever
+ *      someone installs your dependencies (e.g., via npm install)
+ * 
+ * 9. Test your Hook:
+ *    - Try making a small commit:
+ *       git add .
+ *       git commit -m "test: husky setup"
+ *    - If your code has lint or format issues - commit will fail
+ *    - If everything's clean - commit succeeds
+ * 
+ * 10. Auto-Fix on Commit (Optional):
+ *     - If you want to auto-fix issues of just checking, modify your lint-staged
+ *       config like this:
+ * 
+ *       "lint-staged": {
+ *          "*.ts": ["prettier --write", "eslint --fix"]
+ *       }
+ * 
+ *    - Now whenever you commit:
+ *      a. Prettier will format the code
+ *      b. ESLint will fix fixable issues automatically
+ *      c. Add only clean code goes to GitHub
+ * 
+*/
+```
