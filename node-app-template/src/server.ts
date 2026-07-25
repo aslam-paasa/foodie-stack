@@ -1,13 +1,13 @@
 function welcome(name: string) {
-    console.log('hello')
+  console.log('hello');
 
-    const user = { 
-        name: "Rakesh" 
-    }
+  const user = {
+    name: 'Rakesh',
+  };
 
-    const first_name = user['name']
+  const first_name = user.name;
 
-    return name + first_name
+  return name + first_name;
 }
 
-welcome('Yadav');
+welcome('Pandey');
