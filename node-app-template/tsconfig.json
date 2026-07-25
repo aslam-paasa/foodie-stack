@@ -1,45 +1,90 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
-  "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",
-    "outDir": "./dist",
+    // This is the TypeScript configuration file that controls how TypeScript compiles your code
+    "compilerOptions": {
+        /**
+         * 1. Basic Compilation Settings
+         *    a. target: Specify which JavaScript version to compile to
+         *    b. lib: Include ES6 library definitions
+         */
+        "target": "esnext",
+        "lib": ["es6"],
 
-    // Environment Settings
-    "module": "nodenext",
-    "target": "es2022",
-    "types": [],
+        /**
+         * 2. Module Settings
+         *    a. module: Use CommonJS module system (standard for Node.js)
+         *    b. rootDir: Source code root directory
+         *    c. outDir: Output directory for compiled files
+         */
+        "module": "commonjs",
+        "rootDir": "./",
+        "outDir": "./dist",
 
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+        /**
+         * 3. Node.js Specific Settings
+         *    a. types: Include type definitions for Node.js
+         *    b. Remember to run: npm install -D @types/node
+         */
+        "types": ["node"],
 
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+        /**
+         * 4. Source Map and Declaration Settings
+         *    a. sourceMap: Generate source maps for debugging
+         *    b. declaration: Generate .d.ts files
+         *    c. declarationMap: Generate source maps for .d.ts files
+         */
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
 
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+        /**
+         * 5. Type Checking Settings
+         *    a. strict: Enable all strict type checking options
+         *    b. noUncheckedIndexedAccess: Add undefined to indexed access
+         *    c. exactOptionalPropertyTypes: Be strict about optional property types
+         *    d. strictPropertyInitialization: Don't require class properties to be initialized
+         */
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        "strictPropertyInitialization": false,
 
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
+        /**
+         * 6. Module Interoperability
+         *    a. esModuleInterop: Better interop between different module systems
+         *    b. forceConsistentCasingInFileNames: Ensure consistent file name casing
+         */
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
 
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
-  }
+        /**
+         * 7. Decorator Support (for TypeORM and other libraries)
+         *    a. emitDecoratorMetadata: Enable decorator metadata
+         *    b. experimentalDecorators: Enable decorators
+         */
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+
+        /**
+         * 8. Performance and Build
+         *    a. skipLibCheck: Skip type checking of declaration files
+         */
+        "skipLibCheck": true,
+
+        /**
+         * 9. Optional Style Checks (commented out by default)
+         *    a. noImplicitReturns: Ensure all code paths return a value
+         *    b. noImplicitOverride: Ensure all overridden methods are marked with @override
+         *    c. noUnusedLocals: Ensure all local variables are used
+         *    d. noUnusedParameters: Ensure all function parameters are used
+         *    e. noFallthroughCasesInSwitch: Ensure all switch cases are covered
+         *    f. noPropertyAccessFromIndexSignature: Ensure all index signatures are used
+         */
+        // "noImplicitReturns": true,
+        // "noImplicitOverride": true,
+        // "noUnusedLocals": true,
+        // "noUnusedParameters": true,
+        // "noFallthroughCasesInSwitch": true,
+        // "noPropertyAccessFromIndexSignature": true
+    },
+    "include": ["src/**/*", "*.spec.ts", "tests"]
 }
-

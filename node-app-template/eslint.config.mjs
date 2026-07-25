@@ -7,7 +7,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
-    ignores: ['dist', 'node_modules', 'eslint.config.mjs'] /* Don't scan there folders */,
+    ignores: ['dist', 'node_modules', 'eslint.config.mjs', 'jest.config.cjs'] /* Don't scan there folders */,
   },
   {
     languageOptions: {
@@ -17,8 +17,9 @@ export default tseslint.config(
       },
     },
     rules: {
-      // "no-console": "error",
-      'dot-notation': 'error',
+        // 'no-console': 'error',
+        // 'dot-notation': 'error',
+        '@typescript-eslint/no-misused-promises': 'off',
     },
   }
 );

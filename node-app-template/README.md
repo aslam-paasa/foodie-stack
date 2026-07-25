@@ -864,21 +864,21 @@ Setting Up a Logger:
  *   - Install: npm i http-errors
  *              npm i -D @types/http-errors
  *   - Jab v humein http error throw karna hoga to hum iss package ka use karnge
- * 
+ *
  *       app.get('/', (req, res) => {
  *          const err = createHttpError(401, "You cannot access this route")
  *          throw err
  *          res.send('Welcome to Auth Service')
  *       })
- * 
- *       
+ *
+ *
  *        // global error handler
- * 
+ *
  *       // eslint-disable-next-line @typescript-eslint/no-unused-vars
  *       app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
  *          logger.error(err.message)
  *          const statusCode = err.statusCode || 500;
- * 
+ *
  *          res.status(statusCode).json({
  *             errors: [
  *                   {
@@ -890,23 +890,23 @@ Setting Up a Logger:
  *             ]
  *          })
  *       })
- * 
- * 
- * - But there is a catch, if we use async in our api then server will crash 
+ *
+ *
+ * - But there is a catch, if we use async in our api then server will crash
  *   instead of error handling
- * 
+ *
  *   app.get('/', async (req, res) => {
  *       const err = createHttpError(401, "You cannot access this route")
  *       throw err
  *       res.send('Welcome to Auth Service')
  *   })
- * 
- *   // global error handler 
+ *
+ *   // global error handler
  *   // eslint-disable-next-line @typescript-eslint/no-unused-vars
  *   app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
  *       logger.error(err.message)
  *       const statusCode = err.statusCode || 500;
- *   
+ *
  *       res.status(statusCode).json({
  *           errors: [
  *               {
@@ -918,23 +918,23 @@ Setting Up a Logger:
  *           ]
  *       })
  *   })
- * 
- * - Solution: Instead of 'throw err', pass third param i.e. next jisko hum 
+ *
+ * - Solution: Instead of 'throw err', pass third param i.e. next jisko hum
  *   call kar denge jo error check karega.
- * 
+ *
  *    app.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *       const err = createHttpError(401, "You cannot access this route")
  *       next(err)
  *       // res.send('Welcome to Auth Service')
  *    })
- * 
+ *
  *    // global error handler
- * 
+ *
  *    // eslint-disable-next-line @typescript-eslint/no-unused-vars
  *    app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
  *       logger.error(err.message)
  *       const statusCode = err.statusCode || 500;
- * 
+ *
  *       res.status(statusCode).json({
  *          errors: [
  *                {
@@ -946,5 +946,93 @@ Setting Up a Logger:
  *          ]
  *       })
  *    })
+```
 
+```js
+/**
+ * Setting Up Automated Tests:
+ * 1. What do we normally do?
+ *    - When we build a new feature (like signup, login, etc), we usually test it 
+ *      manually. 
+ *      a. We open the browser
+ *      b. Try the feature
+ *      c. Or use Postman to check if the API works properly
+ *    - This is called manual testing.
+ * 
+ * 2. The Problem with Manual Testing
+ *    - Let's say you just finished Feature-1 and tested it - works fine.
+ *    - Now you build Feature-2, test it - also fine.
+ *    - But... what if Feature-2 accidentally broke Feature-1?
+ *    - If you only test the new feature, you might miss bugs in the old ones.
+ *    - So, before launching anything, you'd have to:
+ *      a. Re-test every single feature manually again and again
+ *      b. Which take a lot of time
+ *      c. And humans can easily make mistakes
+ * 
+ * 3. The Smart Solution - Automated Testing
+ *    - Instead of manually clicking buttons everytime, we write test scripts 
+ *      that check the app automatically.
+ *    - So now, when you run just one command (like npm test), it will automatically
+ *      test your entire application and tell you which features are passing or failing.
+ * 
+ * 
+ * 4. How this fits in real projects?
+ *    - When we use CI/CD pipelines (like GitHub Actions, Jenkins, etc.)
+ *      - Everytime we push code or deploy our app,
+ *      - The pipeline runs all test cases automatically
+ *      - It checks: "Is everything working fine before deployment?"
+ *    - If all tests pass - Code is deployed
+ *    - If any test fails - Deployment stops (to prevent bugs in production)
+ * 
+ * 
+ * 5. Unit Testing Setup:
+ *    - install jest: npm install --save-dev jest
+ *                    npm install --save-dev ts-jest
+ *                    npm install --save-dev @types/jest
+ *    - config: npx ts-jest config:init
+ *    - package.json:
+ *      "scripts": {
+ *          "test": "jest --watch --runInBand"
+ *      }
+ * 
+ *    - src/utils.ts:
+ *      export const calculateDiscount = (price: number, percentage: number) => {
+ *          return price * (percentage / 100)
+ *      }
+ * 
+ *    - app.spec.ts:
+ *      import { calculateDiscount } from "./src/utils";
+ *      import { describe, it, expect } from '@jest/globals';
+ *      
+ *      describe("App", () => {
+ *          it("should return the correct discount amount", () => {
+ *              const discount = calculateDiscount(100, 10);
+ *              expect(discount).toBe(10);
+ *          });
+ *      });
+ * 
+ * API/Integration/HTTP Testing Setup:
+ * - npm i supertest --save-dev
+ * - npm i @types/supertest --save-dev
+ * 
+ *    import { calculateDiscount } from "./src/utils";
+ *    import { describe, it, expect } from '@jest/globals';
+ *    import request from "supertest";
+ *    import app from "./src/app";
+ * 
+ *    describe("App", () => {
+ *       
+ *       # Unit Testing
+ *       it("should return the correct discount amount", () => {
+ *          const discount = calculateDiscount(100, 10);
+ *          expect(discount).toBe(10);
+ *       });
+ * 
+ *        # API Testing
+ *       it("should return 200 status code", async () => {
+ *          const response = await request(app).get("/").send();
+ *          expect(response.status).toBe(200);
+ *       });
+ *    });
+*/
 ```
