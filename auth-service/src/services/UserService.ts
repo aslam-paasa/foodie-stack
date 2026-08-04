@@ -2,6 +2,7 @@ import createHttpError from "http-errors";
 import { User } from "../entity/User";
 import { UserData } from "../types";
 import { Repository } from "typeorm";
+import { Roles } from "../constants/index";
 
 export class UserService {
     constructor(private userRepository: Repository<User>) { }
@@ -12,7 +13,8 @@ export class UserService {
                 firstName,
                 lastName,
                 email,
-                password
+                password,
+                role: Roles.CUSTOMER
             })
         } catch (err) {
             const error = createHttpError(500, "Failed to store data in the database")

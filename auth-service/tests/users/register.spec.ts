@@ -6,6 +6,7 @@ import app from '../../src/app';
 import { User } from '../../src/entity/User';
 import { AppDataSource } from '../../src/config/data-source';
 import { truncateTable } from '../utils';
+import { Roles } from '../../src/constants/index';
 
 
 describe("POST /auth/register", () => {
@@ -18,7 +19,8 @@ describe("POST /auth/register", () => {
 
     beforeEach(async () => {
         /* Database Truncate */
-        await truncateTable(connection, "users");
+        await connection.dropDatabase();
+        await connection.synchronize();
     })
 
     afterAll(async () => {
@@ -89,7 +91,41 @@ describe("POST /auth/register", () => {
             expect(users[0]?.email).toBe(userData.email);
         })
 
-        it.todo("should return an id of the created user");
+        it("should return an id of the created user", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            /* 2. Act on the data */
+            const response = await request(app).post("/auth/register").send(userData);
+
+            /* 3. Assert the result */
+            expect(response.statusCode).toBe(201);
+            expect(response.body).toEqual({ id: expect.any(Number) });
+        });
+
+        it("should assign a customer role", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            /* 2. Act on the data */
+            await request(app).post("/auth/register").send(userData);
+
+            /* 3. Assert the result */
+            const userRepository = connection.getRepository(User);
+            const users = await userRepository.find();
+            expect(users[0]).toHaveProperty("role");
+            expect(users[0]?.role).toBe(Roles.CUSTOMER);
+        })
     });
 
     describe("Fields are missing", () => {
