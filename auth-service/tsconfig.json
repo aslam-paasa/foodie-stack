@@ -58,7 +58,7 @@
 
     /**
      * 7. Decorator Support (for TypeORM and other libraries)
-     *    a. emitDecoratorMetadata: Enable decorator metadata
+     *    a. emitDecoratorMetadata : Enable decorator metadata
      *    b. experimentalDecorators: Enable decorators
      */
     "emitDecoratorMetadata": true,

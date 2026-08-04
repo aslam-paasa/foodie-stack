@@ -43,6 +43,22 @@ describe("POST /auth/register", () => {
                 expect.stringContaining("json")
             );
         })
+
+        it("should persist the user in the database", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            /* 2. Act on the data */
+            await request(app).post("/auth/register").send(userData);
+
+            /* 3. Assert the result */
+            
+        })
     });
 
     describe("Fields are missing", () => {
