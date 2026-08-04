@@ -63,6 +63,7 @@
      */
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "useDefineForClassFields": false,
 
     /**
      * 8. Performance and Build

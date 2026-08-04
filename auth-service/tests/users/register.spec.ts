@@ -88,6 +88,8 @@ describe("POST /auth/register", () => {
             expect(users[0]?.lastName).toBe(userData.lastName);
             expect(users[0]?.email).toBe(userData.email);
         })
+
+        it.todo("should return an id of the created user");
     });
 
     describe("Fields are missing", () => {

@@ -7,7 +7,7 @@
    "main": "index.js",
    "scripts": {
       "build": "tsc",
-      "start": "ts-node src/index.ts",
+      "start": "tsx src/index.ts",
       "dev": "cross-env NODE_ENV=dev nodemon --exec tsx src/server.ts",
       "format:fix": "prettier --write .",
       "format:check": "prettier --check .",
@@ -51,8 +51,8 @@
       "express": "^5.2.1",
       "http-errors": "^2.0.1",
       "pg": "^8.22.0",
-      "reflect-metadata": "^0.2.2",
-      "typeorm": "0.3.31",
+      "reflect-metadata": "^0.1.13",
+      "typeorm": "0.3.17",
       "winston": "^3.19.0"
    }
 }
