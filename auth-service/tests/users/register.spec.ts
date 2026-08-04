@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, beforeEach, afterAll,  } from '@jest/globals';
+import { describe, expect, it, beforeAll, beforeEach, afterAll, } from '@jest/globals';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
@@ -147,6 +147,27 @@ describe("POST /auth/register", () => {
             expect(users[0]?.password).not.toBe(userData.password);
             expect(users[0]?.password).toHaveLength(60);
             expect(users[0]?.password).toMatch(/^\$2b\$\d+\$/);
+        })
+
+        it("should return 400 status code if email is already exist", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            const userRepository = connection.getRepository(User);
+            await userRepository.save({ ...userData, role: Roles.CUSTOMER });
+
+            /* 2. Act on the data */
+            const response = await request(app).post("/auth/register").send(userData);
+            const users = await userRepository.find();
+
+            /* 3. Assert the result */
+            expect(response.statusCode).toBe(400);
+            expect(users).toHaveLength(1);
         })
     });
 
