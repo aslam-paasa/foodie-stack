@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, beforeEach, afterAll } from '@jest/globals';
+import { describe, expect, it, beforeAll, beforeEach, afterAll,  } from '@jest/globals';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
@@ -84,9 +84,9 @@ describe("POST /auth/register", () => {
             const userRepository = connection.getRepository(User);
             const users = await userRepository.find();
             expect(users).toHaveLength(1);
-            // expect(users[0].firstName).toBe(userData.firstName);
-            // expect(users[0].lastName).toBe(userData.lastName);
-            // expect(users[0].email).toBe(userData.email);
+            expect(users[0]?.firstName).toBe(userData.firstName);
+            expect(users[0]?.lastName).toBe(userData.lastName);
+            expect(users[0]?.email).toBe(userData.email);
         })
     });
 
