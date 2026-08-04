@@ -2,6 +2,7 @@ import { describe, expect, it, beforeAll, beforeEach, afterAll,  } from '@jest/g
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
+
 import app from '../../src/app';
 import { User } from '../../src/entity/User';
 import { AppDataSource } from '../../src/config/data-source';
@@ -125,6 +126,27 @@ describe("POST /auth/register", () => {
             const users = await userRepository.find();
             expect(users[0]).toHaveProperty("role");
             expect(users[0]?.role).toBe(Roles.CUSTOMER);
+        })
+
+        it("should store the hashed password in the database", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            /* 2. Act on the data */
+            await request(app).post("/auth/register").send(userData);
+
+            /* 3. Assert the result */
+            const userRepository = connection.getRepository(User);
+            const users = await userRepository.find();
+            console.log(users[0]?.password);
+            expect(users[0]?.password).not.toBe(userData.password);
+            expect(users[0]?.password).toHaveLength(60);
+            expect(users[0]?.password).toMatch(/^\$2b\$\d+\$/);
         })
     });
 
