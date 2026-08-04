@@ -77,14 +77,14 @@
  * 
  * 5. Running the Express App in a Docker Container:
  *    - Once the image is built, you can run it:
- *      docker run --rm -it 
+ *      docker run --rm --name auth-service -it 
  *      -v "${PWD}:/usr/src/app" 
  *      -v /usr/src/app/node_modules 
  *      --env-file "${PWD}/.env" 
  *      -p 3000:3000 
  *      -e NODE_ENV=development
  *       auth-service:dev
-
+ * 
  *    - Note:
  *      a. For Powershell users: Use ${PWD} instead of ${pwd}
  *      b. For Command Prompt user: Use %cd% instead of ${pwd}
