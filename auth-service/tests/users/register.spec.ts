@@ -8,6 +8,7 @@ import { User } from '../../src/entity/User';
 import { AppDataSource } from '../../src/config/data-source';
 import { Roles } from '../../src/constants/index';
 import { isJwt } from '../utils';
+import { RefreshToken } from '../../src/entity/RefreshToken';
 
 describe("POST /auth/register", () => {
     let connection: DataSource;
@@ -184,15 +185,15 @@ describe("POST /auth/register", () => {
             /* 3. Assert the result */
             let accessToken = null;
             let refreshToken = null;
-            
+
             const cookies = (response.headers["set-cookie"] as string[] | undefined) ?? [];
 
             cookies.forEach((cookie) => {
-                if(cookie.startsWith('accessToken=')) {
+                if (cookie.startsWith('accessToken=')) {
                     accessToken = cookie.split(';')[0]?.split('=')[1];
                 }
 
-                if(cookie.startsWith('refreshToken=')) {
+                if (cookie.startsWith('refreshToken=')) {
                     refreshToken = cookie.split(';')[0]?.split('=')[1];
                 }
             })
@@ -202,6 +203,30 @@ describe("POST /auth/register", () => {
 
             expect(isJwt(accessToken)).toBeTruthy();
             expect(isJwt(refreshToken)).toBeTruthy();
+        })
+
+        it("should store the refresh token in the database", async () => {
+            /* 1. Arrange the data */
+            const userData = {
+                firstName: "Rakesh",
+                lastName: "Kumar",
+                email: "rakesh@mern.space",
+                password: "secret"
+            }
+
+            /* 2. Act on the data */
+            const response = await request(app).post("/auth/register").send(userData);
+
+            /* 3. Assert the result */
+            const refreshTokenRepo = connection.getRepository(RefreshToken);
+
+            const tokens = await refreshTokenRepo
+                .createQueryBuilder('refreshToken')
+                .where('refreshToken.userId = :userId', { userId: (response.body as Record<string, string>).id })
+                .getMany();
+            console.log(tokens);
+
+            expect(tokens).toHaveLength(1);
         })
     });
 
