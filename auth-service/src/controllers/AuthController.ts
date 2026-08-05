@@ -32,6 +32,24 @@ export class AuthController {
                 password,
             });
             this.logger.info("User has been registered", { id: user.id });
+
+            const accessToken = 'accessToken=1234567890';
+            const refreshToken = 'refreshToken=1234567890';
+
+            res.cookie('accessToken', accessToken, {
+                domain: 'localhost',
+                sameSite: 'strict',
+                maxAge: 1000 * 60 * 60, // 1h
+                httpOnly: true, // very important
+            });
+            
+            res.cookie('refreshToken', refreshToken, {
+                domain: 'localhost',
+                sameSite: 'strict',
+                maxAge: 1000 * 60 * 60 * 24 * 365, // 1yr
+                httpOnly: true, // very important
+            });
+
             res.status(201).json({ id: user.id });
         } catch (err) {
             next(err);
