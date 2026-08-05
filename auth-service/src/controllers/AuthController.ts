@@ -1,11 +1,19 @@
+import fs from "node:fs";
+import path from "node:path";
 import { NextFunction, Response } from "express";
 import { RegisterUserRequest } from "../types";
 import { UserService } from "../services/UserService";
 import { Logger } from "winston";
 import { validationResult } from "express-validator";
+import { JwtPayload, sign } from 'jsonwebtoken';
+import createHttpError from 'http-errors';
+import { Roles } from "../constants";
 
 export class AuthController {
-    constructor(private userService: UserService, private logger: Logger) { }
+    constructor(
+        private userService: UserService, 
+        private logger: Logger
+    ) {}
 
     async register(req: RegisterUserRequest, res: Response, next: NextFunction) {
 
@@ -21,7 +29,7 @@ export class AuthController {
             firstName,
             lastName,
             email,
-            password: "******"
+            password: "******", 
         });
 
         try {
@@ -30,11 +38,33 @@ export class AuthController {
                 lastName,
                 email,
                 password,
+                role: Roles.CUSTOMER,
             });
             this.logger.info("User has been registered", { id: user.id });
 
-            const accessToken = 'accessToken=1234567890';
-            const refreshToken = 'refreshToken=1234567890';
+            /* Creating Access and Refresh Tokens & adding to the cookies*/
+            let privateKey: Buffer;
+
+            try {
+                privateKey = fs.readFileSync(path.join(__dirname, '../../certs/private.pem'));
+            } catch (err) {
+                const error = createHttpError(500, "Error while reading private key")
+                next(error);
+                return;
+            }
+
+            const payload: JwtPayload = {
+                sub: String(user.id),
+                role: user.role,
+            }
+
+            const accessToken = sign(payload, privateKey, {
+                algorithm: 'RS256',
+                expiresIn: '1h',
+                issuer: 'auth-service',
+            });
+
+            const refreshToken = "asegsgd";
 
             res.cookie('accessToken', accessToken, {
                 domain: 'localhost',
@@ -42,7 +72,7 @@ export class AuthController {
                 maxAge: 1000 * 60 * 60, // 1h
                 httpOnly: true, // very important
             });
-            
+
             res.cookie('refreshToken', refreshToken, {
                 domain: 'localhost',
                 sameSite: 'strict',
