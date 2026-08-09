@@ -267,7 +267,7 @@ describe("POST /auth/register", () => {
             }
 
             /* 2. Act on the data */
-            const response = await request(app).post("/auth/register").send(userData);
+            await request(app).post("/auth/register").send(userData);
 
             /* 3. Assert the result */
             const userRepository = connection.getRepository(User);
