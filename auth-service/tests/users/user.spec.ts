@@ -39,7 +39,11 @@ describe('GET /auth/self', () => {
 
   describe('Given all fields', () => {
     it('should return the 200 status code', async () => {
-      const response = await request(app).get('/auth/self').send();
+      const accessToken = jwks.token({ sub: String('1'), role: Roles.CUSTOMER });
+      const response = await request(app)
+      .get('/auth/self')
+      .set('Cookie', [`accessToken=${accessToken}`])
+      .send();
       expect(response.statusCode).toBe(200);
     });
 
@@ -59,9 +63,9 @@ describe('GET /auth/self', () => {
 
       /* Add token to cookie */
       const response = await request(app)
-      .get('/auth/self')
-      .set('Cookie', [`accessToken=${accessToken};`])
-      .send();
+        .get('/auth/self')
+        .set('Cookie', [`accessToken=${accessToken};`])
+        .send();
 
       /* Assert: Check if user id matches with registered user */
       expect((response.body as Record<string, string>).id).toBe(data.id);

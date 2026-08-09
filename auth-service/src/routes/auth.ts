@@ -10,6 +10,8 @@ import { TokenService } from '../services/TokenService.js';
 import { RefreshToken } from '../entity/RefreshToken.js';
 import loginValidator from '../validators/login-validator.js';
 import { CredentialService } from '../services/CredentialService.js';
+import authenticate from '../middlewares/authenticate.js';
+import { AuthRequest } from '../types/index.js';
 
 const router = express.Router();
 const userRepository = AppDataSource.getRepository(User);
@@ -27,8 +29,8 @@ router.post('/login', loginValidator, (req: Request, res: Response, next: NextFu
   authController.login(req, res, next)
 );
 
-router.get('/self', (req: Request, res: Response) =>
-  authController.self(req, res)
+router.get('/self', authenticate, (req: Request, res: Response) =>
+  authController.self(req as AuthRequest, res)
 );
 
 export default router;

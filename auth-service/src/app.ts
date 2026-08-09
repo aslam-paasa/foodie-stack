@@ -3,9 +3,11 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import logger from './config/logger.js';
 import { HttpError } from 'http-errors';
 import authRouter from './routes/auth.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -13,7 +15,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRouter);
-
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
