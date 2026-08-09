@@ -29,7 +29,7 @@ export class UserService {
         role: Roles.CUSTOMER,
       });
     } catch (err) {
-      const error = createHttpError(500, 'Failed to store data in the database');
+      const error = createHttpError(500, 'Failed to store data in the database', { cause: err });
       throw error;
     }
   }

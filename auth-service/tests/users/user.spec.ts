@@ -53,7 +53,7 @@ describe('GET /auth/self', () => {
         firstName: 'Rakesh',
         lastName: 'Kumar',
         email: 'rakesh@mern.space',
-        password: 'secret',
+        password: 'secret123',
       };
       const userRepository = connection.getRepository(User);
       const data = await userRepository.save({ ...userData, role: Roles.CUSTOMER });
