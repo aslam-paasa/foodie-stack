@@ -97,5 +97,24 @@ describe('GET /auth/self', () => {
       /* Assert */
       expect(response.body).not.toHaveProperty('password');
     });
+
+    it('should return 401 status code if token does not exits', async () => {
+      /* Register User */
+      const userData = {
+        firstName: 'Rakesh',
+        lastName: 'Kumar',
+        email: 'rakesh@mern.space',
+        password: 'secret123',
+      };
+      
+      const userRepository = connection.getRepository(User);
+      await userRepository.save({ ...userData, role: Roles.CUSTOMER });
+
+      /* Add token to cookie */
+      const response = await request(app).get('/auth/self').send();
+
+      /* Assert */
+      expect(response.statusCode).toBe(401);
+    });
   });
 });
