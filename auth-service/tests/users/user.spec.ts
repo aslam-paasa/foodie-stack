@@ -41,9 +41,9 @@ describe('GET /auth/self', () => {
     it('should return the 200 status code', async () => {
       const accessToken = jwks.token({ sub: String('1'), role: Roles.CUSTOMER });
       const response = await request(app)
-      .get('/auth/self')
-      .set('Cookie', [`accessToken=${accessToken}`])
-      .send();
+        .get('/auth/self')
+        .set('Cookie', [`accessToken=${accessToken}`])
+        .send();
       expect(response.statusCode).toBe(200);
     });
 
@@ -68,7 +68,34 @@ describe('GET /auth/self', () => {
         .send();
 
       /* Assert: Check if user id matches with registered user */
-      expect((response.body as Record<string, string>).id).toBe(data.id);
+      expect(response.body).not.toHaveProperty('password'); // top level
+      expect((response.body as { user: Record<string, unknown> }).user).not.toHaveProperty(
+        'password'
+      );
+    });
+
+    it('should not return the password field', async () => {
+      /* Register User */
+      const userData = {
+        firstName: 'Rakesh',
+        lastName: 'Kumar',
+        email: 'rakesh@mern.space',
+        password: 'secret123',
+      };
+      const userRepository = connection.getRepository(User);
+      const data = await userRepository.save({ ...userData, role: Roles.CUSTOMER });
+
+      /* Generate Token */
+      const accessToken = jwks.token({ sub: String(data.id), role: data.role });
+
+      /* Add token to cookie */
+      const response = await request(app)
+        .get('/auth/self')
+        .set('Cookie', [`accessToken=${accessToken};`])
+        .send();
+
+      /* Assert */
+      expect(response.body).not.toHaveProperty('password');
     });
   });
 });
