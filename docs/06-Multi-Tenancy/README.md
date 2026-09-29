@@ -1,0 +1,430 @@
+```js
+/**
+ * Multi-Tenancy:
+ * - One application (and one database) serves MANY separate customers.
+ * - Each customer is called a "tenant".
+ * - Example: Slack. 
+ *   - Company A and Company B both use the same Slack app,
+ *   - But neither can see the other's data. 
+ *     - Company A = tenant 1,
+ *     - Company B = tenant 2.
+ * 
+ * HOW DO WE KEEP TENANTS SEPARATE?
+ * - Every user belongs to exactly ONE tenant (via tenantId).
+ * - When we fetch data, we always filter by the tenant, so people only
+ *   see what belongs to their own company.
+ * 
+ *                                                      Keeps users logged in
+ *                                                   +-------------------------+
+ *                                             +---->| refreshTokens           |
+ *                                             |     +-------------------------+
+ *      The people who log in                  |     | - id        : string pk |
+ *   +-------------------------+               |     | - userId    : number fk |
+ *   | Users                   |               |     | - expiresAt : timestamp |
+ *   +-------------------------+               |     +-------------------------+
+ *   | - id        : string pk |---------------+     ONE user has MANY refresh tokens
+ *   | - email     : string    |                     (refreshTokens.userId  --->  users.id)
+ *   | - firstName : string    |
+ *   | - lastName  : string    |
+ *   | - password  : string    |
+ *   | - role      : string    |
+ *   | - tenantId  : number fk |---------------+
+ *   +-------------------------+               |
+ *                                             |
+ *                                             |
+ *                                             |    The companies / organizations
+ *                                             |      +-----------------------+
+ *                                             +----->| tenants               |
+ *                                                    +-----------------------+
+ *                                                    | - id      : string pk |
+ *                                                    | - name    : string    |
+ *                                                    | - address : string    |
+ *                                                    +-----------------------+
+ *                                                    ONE tenant has MANY users
+ *                                                (users.tenantId  --->  tenants.id)
+ * 
+ *
+ * Note:
+ * 1. PK (Primary Key): 
+ *    - A column that uniquely identifies each row.
+ *    - No two rows in a table can share the same PK.
+ * 2. FK (Foreign Key): 
+ *    - A column that stores the PK of a row in ANOTHER table. 
+ *    - It's how tables are linked together.
+ *    - Rule: An FK must have the same type as the PK it points
+ *      to (string -> string).
+ *
+ *
+ * TABLE-BY-TABLE EXPLANATION
+ * 1. tenants  (the customer / organization)
+ *    - id      : Unique ID of the tenant.
+ *    - name    : Name of the company, e.g. "Acme Corp".
+ *    - address : Where the company is located.
+ *
+ * 2. users  (people who log into the app)
+ *    - id        : Unique ID of the user.
+ *    - email     : Used to log in. Should be UNIQUE.
+ *    - firstName : User's first name.
+ *    - lastName  : User's last name.
+ *    - password  : NEVER save plain text. Store a hash
+ *                  (e.g. with bcrypt or argon2).
+ *    - role      : What the user is allowed to do,
+ *                  e.g. "admin", "manager", "customer".
+ *    - tenantId  : FK -> tenants.id. Says which company this
+ *                  user belongs to. This is the column that keeps
+ *                  each tenant's data separate.
+ *
+ * 3. refreshTokens  (used for staying logged in)
+ *    - id        : Unique ID of the token.
+ *    - userId    : FK -> users.id. Says which user owns this token.
+ *    - expiresAt : Date/time when the token stops working.
+ *
+ * Why refresh tokens? 
+ * - An access token (the short-lived "key") expires quickly, 
+ *   e.g. after 15 minutes, for safety. 
+ * - A refresh token lasts longer (days or weeks) and lets the app 
+ *   quietly get a new access token, so the user doesn't have to 
+ *   log in again and again.
+ *
+ *
+ * RELATIONSHIPS (in plain English)
+ * - tenants  1 ----- *  users           One tenant has many users.
+ * - users    1 ----- *  refreshTokens   One user has many tokens
+ *                                       (e.g. phone, laptop, tablet).
+ *
+ *
+ * REAL-WORLD EXAMPLE:
+ * - tenants:        { id: "t1", name: "Acme Corp" }
+ *                   { id: "t2", name: "Globex"    }
+ *
+ * - users:          { id: "u1", email: "amy@acme.com",   tenantId: "t1" }
+ *                   { id: "u2", email: "bob@globex.com", tenantId: "t2" }
+ *
+ * - refreshTokens:  { id: "r1", userId: "u1", expiresAt: "2026-10-30" }
+ *
+ * Note:  
+ * - Amy (u1) belongs to Acme (t1), so she can only see Acme's data.
+ * - Bob (u2) belongs to Globex (t2), so he can't see Acme's data.
+ *
+ *
+ * GOLDEN RULE
+ * - ALWAYS filter queries by tenantId. Forgetting this can leak one
+ *   company's data to another, which is a serious security bug.
+ * - Example:  SELECT * FROM users WHERE tenantId = 't1';
+ */
+
+/**
+ * STEP 1: ENTITY NAME CHANGE + MIGRATION
+ * - Hum TypeORM entity ke database table name ko change kar rahe hain.
+ * - Example:
+ * 
+ *   a. Pehle:
+ *      TypeORM default convention ke according table ka naam "user" ya 
+ *      configured naming strategy ke according ho sakta hai.
+ *      
+ *      @Entity()
+ *      export class User {}
+ *
+ *   b. Ab hum explicitly table name define karenge:
+ *
+ *      @Entity({ name: 'users' })
+ *      export class User {}
+ *
+ *
+ * 1. ENTITY NAME KYA HAI?
+ *    - @Entity() TypeORM ko batata hai ki ye class database table ko represent 
+ *      karti hai.
+ *    - Example:
+ *
+ *      @Entity({ name: 'users' })
+ *      export class User {
+ *        ...
+ *      }
+ *
+ *    - Yahan:
+ *          User
+ *           |
+ *           v
+ *       users table
+ *
+ *    Important:
+ *    - Class ka naam: User
+ *    - Database table ka naam: users
+ *    - Dono same hona zaroori nahi hai.
+ *
+ *
+ * 2. EXPLICIT TABLE NAME
+ *    - Hum database table ka exact naam specify kar sakte hain:
+ *      @Entity({ name: 'users' })
+ *
+ *    - Example:
+ *      @Entity({ name: 'refreshTokens' })
+ *      export class RefreshToken {
+ *        ...
+ *      }
+ *
+ *    - Iska matlab TypeORM:
+ *       RefreshToken class
+ *             |
+ *             v
+ *       refreshTokens table
+ *
+ *    - Similarly:
+ *        User class
+ *            |
+ *            v
+ *        users table
+ *
+ *
+ * 3. REFRESHTOKEN ENTITY
+ *
+ *    import {
+ *      Entity,
+ *      PrimaryGeneratedColumn,
+ *      Column,
+ *      ManyToOne,
+ *      UpdateDateColumn,
+ *      CreateDateColumn,
+ *    } from 'typeorm';
+ *    import { User } from './User';
+ *   
+ *    @Entity({ name: 'refreshTokens' })
+ *    export class RefreshToken {
+ *   
+ *      @PrimaryGeneratedColumn()
+ *      id: number;
+ *   
+ *      @Column({ type: 'timestamp' })
+ *      expiresAt: Date;
+ *   
+ *      @ManyToOne(() => User)
+ *      user: User;
+ *   
+ *      @UpdateDateColumn()
+ *      updatedAt: Date;
+ *   
+ *      @CreateDateColumn()
+ *      createdAt: Date;
+ *    }
+ *
+ *    Important:
+ *    - @ManyToOne(() => User)
+ *    - means: Many RefreshTokens
+ *                 |
+ *                 v
+ *              One User
+ *
+ *    Example:
+ *     User
+ *      |
+ *      +---- RefreshToken 1
+ *      |
+ *      +---- RefreshToken 2
+ *      |
+ *      +---- RefreshToken 3
+ *
+ * 4. USER ENTITY
+ *
+ *     @Entity({ name: 'users' })
+ *     export class User {
+ *    
+ *       @PrimaryGeneratedColumn()
+ *       id: number;
+ *    
+ *       @Column({ type: 'varchar' })
+ *       firstName: string;
+ *    
+ *       @Column({ type: 'varchar' })
+ *       lastName: string;
+ *    
+ *       @Column({ type: 'varchar', unique: true })
+ *       email: string;
+ *    
+ *       @Column({ type: 'varchar' })
+ *       password: string;
+ *    
+ *       @Column({ type: 'varchar' })
+ *       role: string;
+ *     }
+ *
+ *    Important:
+ *    @Column({ unique: true })
+ *    email: string;
+ *    means: Do users ke email same nahi ho sakte.
+ *
+ *
+ * 5. WHY DO WE CHANGE ENTITY NAME?
+ *    - Database mein table naming ko explicit aur consistent rakhne ke liye.
+ *    - Example:
+ *      - Class: User
+ *      - Table: users
+ *
+ *      - Class: RefreshToken
+ *      - Table: refreshTokens
+ *
+ *    - Isse application code aur database naming clearly separated rehti hai.
+ *
+ *
+ * 6. ENTITY CHANGE KE BAAD KYA KARNA HAI?
+ *    - Sirf entity file change karne se database automatically update nahi hota,
+ *      especially jab synchronize: false use kar rahe ho.
+ *    - Hume migration generate karni hoti hai.
+ *
+ *    - Flow:
+ *       Entity change
+ *            |
+ *            v
+ *       Generate migration
+ *            |
+ *            v
+ *       Review migration
+ *            |
+ *            v
+ *       Run migration
+ *            |
+ *            v
+ *       Database updated
+ *
+ * 
+ * 7. GENERATE MIGRATION
+ *    - Command: npm run migration:generate -- src/migration/rename_tables
+ *    - Is command ka meaning:
+ *      - migration:generate - Current entities aur database schema ko compare karo.
+ *      - src/migration/rename_tables - Generated migration file ko is location/name
+ *        ke according create karo.
+ *
+ *    - Example generated file:
+ *      - src/migration/1730000000000-rename_tables.ts
+ *
+ *
+ * 8. MIGRATION ACTUALLY KYA KARTI HAI?
+ *    - Migration database schema mein changes ko record karti hai.
+ *    - Example:
+ *      a.  Entity change:
+ *          @Entity({ name: 'users' })
+ *
+ *      b. Database mein required change:
+ *
+ *          old_table
+ *               |
+ *               v
+ *             users
+ *
+ *    - TypeORM migration generate karke SQL changes create karne ki koshish karega.
+ *    - Migration mein generally do methods hoti hain:
+ *      a. up()   - Change apply karta hai.
+ *      b. down() - Change reverse karta hai.
+ *
+ *
+ * 9. GENERATE VS RUN
+ *    Ye interview mein important difference hai.
+ *    a. migration:generate
+ *       - Entities aur current database schema ko compare karke  migration file
+ *         generate karta hai.
+ *
+ *    b. migration:run
+ *       - Already generated migration ko actual database par execute karta hai.
+ *
+ *    Flow:
+ *     Entity change
+ *          |
+ *          v
+ *     migration:generate
+ *          |
+ *          v
+ *     Migration file
+ *          |
+ *          v
+ *     migration:run
+ *          |
+ *          v
+ *     Database updated
+ *
+ *
+ * 10. IMPORTANT: MIGRATION KO REVIEW KARNA
+ *     - Migration generate hone ke baad blindly run nahi karna.
+ *     - Pehle generated migration file check karo.
+ *     - Especially table rename jaise changes mein verify karo ki TypeORM: RENAME TABLE
+ *       kar raha hai ya:
+ *       - DROP TABLE
+ *       - CREATE TABLE, kar raha hai.
+ *     - Agar data important hai, DROP + CREATE dangerous ho sakta hai kyunki existing
+ *       data lose ho sakta hai.
+ *
+ *
+ * 11. RUN MIGRATION
+ *     - Migration generate hone ke baad: npm run migration:run
+ *     - Ye generated migration ko database par apply karega.
+ *
+ * 
+ * 12. INTERVIEW QUESTIONS
+ *     Q1. What does @Entity({ name: 'users' }) do?
+ *     A:  Ye TypeORM ko batata hai ki User entity ko database ke "users" table se
+ *         map karna hai.
+ *
+ *
+ *     Q2. Is entity class name and database table name required to be same?
+ *     A: Nahi.
+ *
+ *        class User
+ *             |
+ *             v
+ *        users table
+ *
+ *       Entity class aur database table ka naam different ho sakta hai.
+ *
+ *
+ *     Q3. Does changing an entity automatically change the database?
+ *     A: Generally nahi, especially production applications mein jahan synchronize
+ *        disabled hota hai. Database schema changes ke liye migrations use karte hain.
+ *
+ *
+ *     Q4. What does migration:generate do?
+ *     A: Ye entity definitions aur current database schema ke difference ko detect
+ *        karke migration file generate karta hai.
+ *
+ *
+ *     Q5. What does migration:run do?
+ *     A: Ye generated pending migrations ko actual database par execute karta hai.
+ *
+ *
+ *     Q6. What is the difference between migration:generate and migration:run?
+ *     A: migration:generate -> Migration file create karta hai.
+ *        migration:run      -> Migration file ko database par execute karta hai.
+ *
+ *
+ *     Q7. Why should we review generated migrations?
+ *     A: ORM kabhi-kabhi schema change ko unexpected way mein generate kar sakta hai.
+ *        Example:
+ *        - Expected: RENAME TABLE
+ *        - But generated:
+ *          - DROP TABLE
+ *          - CREATE TABLE
+ *        - DROP + CREATE se existing data lose ho sakta hai.
+ *
+ *
+ *     Q8. What is the purpose of up() and down()?
+ *     A: up()   -> Migration apply karta hai.
+ *        down() -> Migration ko reverse karta hai.
+*/
+
+/**
+ * QUICK REVISION
+ * 1. @Entity()                  -> Class ko database entity/table se map karta hai.
+ * 2. @Entity({ name: 'users' }) -> Exact database table name define karta hai.
+ * 3. migration:generate         -> Migration file generate karta hai.
+ * 4. migration:run              -> Migration database par apply karta hai.
+ * 5. up()                       -> Change apply.
+ * 6. down()                     -> Change reverse.
+ * 7. Migration review           -> Data loss aur unexpected schema changes avoid karne
+ *                                  ke liye important.
+*/
+
+/**
+ * ONE-LINE INTERVIEW ANSWER
+ * - "In TypeORM, we can explicitly map an entity to a database table using 
+ *   @Entity({ name: 'users' }). 
+ * - After changing the entity schema, we generate a migration to capture the
+ *   schema difference and then run the migration to apply the change to the database."
+ */
+```
