@@ -106,7 +106,7 @@ describe('GET /auth/self', () => {
         email: 'rakesh@mern.space',
         password: 'secret123',
       };
-      
+
       const userRepository = connection.getRepository(User);
       await userRepository.save({ ...userData, role: Roles.CUSTOMER });
 

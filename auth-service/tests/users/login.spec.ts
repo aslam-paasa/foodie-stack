@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, beforeEach, afterAll, } from '@jest/globals';
+import { describe, it, beforeAll, beforeEach, afterAll } from '@jest/globals';
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../../src/config/data-source';
 
@@ -21,7 +21,7 @@ describe('POST /auth/login', () => {
     await connection.destroy();
   });
 
-  describe("Given all fields", () => {
-    it.todo("should login the user");
-  })
+  describe('Given all fields', () => {
+    it.todo('should login the user');
+  });
 });

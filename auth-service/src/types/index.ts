@@ -27,5 +27,5 @@ export type AuthCookie = {
 };
 
 export interface IRefreshTokenPayload extends JwtPayload {
-    id: string;
+  id: string;
 }
