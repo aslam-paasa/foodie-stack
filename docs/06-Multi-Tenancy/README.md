@@ -114,7 +114,7 @@
  */
 
 /**
- * STEP 1: ENTITY NAME CHANGE + MIGRATION
+ * ENTITY NAME CHANGE + MIGRATION
  * - Hum TypeORM entity ke database table name ko change kar rahe hain.
  * - Example:
  * 
@@ -426,5 +426,459 @@
  *   @Entity({ name: 'users' }). 
  * - After changing the entity schema, we generate a migration to capture the
  *   schema difference and then run the migration to apply the change to the database."
+ */
+```
+
+```js
+/**
+ * DEVELOPING TENANT ENTITY + USER-TENANT RELATIONSHIP
+ * 
+ * Goal:
+ *  - Hum apne Auth Service mein multi-tenancy implement karenge.
+ *  - Ab tak:
+ *
+ *      User
+ *       |
+ *       v
+ *    User data
+ *
+ *  - Ab:
+ *    Tenant
+ *      |
+ *      +---- User
+ *      +---- User
+ *      +---- User
+ *
+ *
+ *  - Example:
+ *     Tenant: Restaurant A
+ *         |
+ *         +---- admin@restaurantA.com
+ *         +---- manager@restaurantA.com
+ *         +---- staff@restaurantA.com
+ *    
+ *     Tenant: Restaurant B
+ *         |
+ *         +---- admin@restaurantB.com
+ *         +---- manager@restaurantB.com
+ *
+ *
+ * 1. CREATE TENANT ENTITY
+ *    - File: src/entity/Tenant.ts
+ *
+ *
+ *      import {
+ *        Entity,
+ *        PrimaryGeneratedColumn,
+ *        Column,
+ *        UpdateDateColumn,
+ *        CreateDateColumn,
+ *      } from 'typeorm';
+ *     
+ *     
+ *      @Entity({ name: 'tenants' })
+ *      export class Tenant {
+ *     
+ *        @PrimaryGeneratedColumn()
+ *        id: number;
+ *     
+ *        @Column('varchar', { length: 100 })
+ *        name: string;
+ *     
+ *        @Column('varchar', { length: 255 })
+ *        address: string;
+ *     
+ *        @UpdateDateColumn()
+ *        updatedAt: Date;
+ *     
+ *        @CreateDateColumn()
+ *        createdAt: Date;
+ *      }
+ *
+ *
+ * 2. UNDERSTANDING TENANT ENTITY
+ *    - @Entity({ name: 'tenants' })
+ *    - Iska matlab:
+ *       Tenant class
+ *            |
+ *            v
+ *       tenants database table
+ *
+ *    a. id
+ *       @PrimaryGeneratedColumn()
+ *       id: number;
+ *       - Ye tenant ka unique ID hai.
+ *       - Example:
+ *         - Tenant A -> id = 1
+ *         - Tenant B -> id = 2
+ *         - Tenant C -> id = 3
+ *
+ *    b. name
+ *       @Column('varchar', { length: 100 })
+ *       name: string;
+ *       - Tenant/company/organization ka naam store karega.
+ *       - Example:
+ *         - Foodie Restaurant
+ *         - ABC Restaurant
+ *         - XYZ Corporation
+ *      - Maximum length: 100 characters
+ *
+ *    c. address
+ *       @Column('varchar', { length: 255 })
+ *       address: string;
+ *       - Tenant ka address store karega.
+ *       - Maximum length: 255 characters
+ *
+ *    d. createdAt
+ *       @CreateDateColumn()
+ *       createdAt: Date;
+ *       - Record create hone ka time automatically store hota hai.
+ *
+ *    e. updatedAt
+ *       @UpdateDateColumn()
+ *       updatedAt: Date;
+ *       - Record last time kab update hua, wo automatically maintain hota hai.
+ *
+ *
+ * 3. IMPORTANT: DATE COLUMN TYPE
+ *    @CreateDateColumn()
+ *    @UpdateDateColumn()
+ *    - ke saath application property ko generally Date rakhna better hai.
+ *    - Correct:
+ *      - createdAt: Date;
+ *      - updatedAt: Date;
+ *    - Number rakhne ki zaroorat nahi hai unless tum specifically timestamp ko 
+ *      numeric value ke form mein manage kar rahe ho.
+ *
+ *
+ * 4. GENERATE TENANT TABLE MIGRATION
+ *    - Entity create/change karne ke baad database automatically update nahi karna
+ *      chahiye.
+ *    - Migration generate karo:
+ *      npm run migration:generate -- src/migration/create_tenants_table
+ *    - TypeORM:
+ *    
+ *        Entity
+ *           |
+ *           v
+ *        Database schema compare
+ *           |
+ *           v
+ *        Migration file
+ *
+ *    - Example:
+ *       src/migration/
+ *         |
+ *         +-- 123456789-create_tenants_table.ts
+ *
+ *
+ * 5. RUN TENANT MIGRATION
+ *    - Migration generate hone ke baad: npm run migration:run
+ *    - Isse database mein: tenants table create ho jayega.
+ *    - Final table roughly:
+ *
+ *      tenants
+ *      +----+------+---------+-----------+-----------+
+ *      | id | name | address | createdAt | updatedAt |
+ *      +----+------+---------+-----------+-----------+
+ *
+ *
+ * 6. NOW LINK USERS WITH TENANTS
+ *    - Abhi User aur Tenant separate entities hain.
+ *    - Hume relationship create karni hai:
+ *
+ *       tenants
+ *           |
+ *           | 1
+ *           |
+ *           | MANY
+ *           v
+ *         users
+ *
+ *    - Meaning:
+ *       One Tenant
+ *           |
+ *           +---- Many Users
+ *
+ *
+ * 7. ADD @ManyToOne TO USER
+ *    - User entity mein:
+ *
+ *       import {
+ *         Entity,
+ *         PrimaryGeneratedColumn,
+ *         Column,
+ *         ManyToOne,
+ *       } from 'typeorm';
+ *       
+ *       import { Tenant } from './Tenant';
+ *       
+ *       
+ *       @Entity({ name: 'users' })
+ *       export class User {
+ *       
+ *         @PrimaryGeneratedColumn()
+ *         id: number;
+ *       
+ *         @Column({ type: 'varchar' })
+ *         firstName: string;
+ *       
+ *         @Column({ type: 'varchar' })
+ *         lastName: string;
+ *       
+ *         @Column({
+ *           type: 'varchar',
+ *           unique: true,
+ *         })
+ *         email: string;
+ *       
+ *         @Column({ type: 'varchar' })
+ *         password: string;
+ *       
+ *         @Column({ type: 'varchar' })
+ *         role: string;
+ *       
+ *         @ManyToOne(() => Tenant)
+ *         tenant: Tenant;
+ *       }
+ *
+ *
+ * 8. WHAT DOES @ManyToOne MEAN?
+ *    - @ManyToOne(() => Tenant) ka meaning:
+ *
+ *       Many Users
+ *           |
+ *           v
+ *       One Tenant
+ *
+ *   - Example:
+ *
+ *     Tenant 1
+ *        |
+ *        +---- User 1
+ *        +---- User 2
+ *        +---- User 3
+ *
+ *     Tenant 2
+ *        |
+ *        +---- User 4
+ *        +---- User 5
+ *
+ *   - Therefore:
+ *     - Tenant -> Users  = One-to-Many
+ *     - User   -> Tenant = Many-to-One
+ *
+ *
+ * 9. HOW DOES TYPEORM CREATE tenantId?
+ *    - Jab hum likhte hain:
+ *      @ManyToOne(() => Tenant)
+ *      tenant: Tenant;
+ *
+ *    - TypeORM relationship ke liye database mein generally foreign-key column 
+ *      create karega.
+ *    - Conceptually:
+ *
+ *      users
+ *      +----+---------+----------+
+ *      | id | email   | tenantId |
+ *      +----+---------+----------+
+ *
+ *      - tenantId reference karega: tenants.id
+ *      - Relationship: users.tenantId
+ *                           |
+ *                           v
+ *                       tenants.id
+ *
+ *
+ * 10. FOREIGN KEY KYA HAI?
+ *     - Foreign key database mein do tables ke beech relationship establish karti hai.
+ *     - Example:
+ *
+ *       users.tenantId
+ *            |
+ *            v
+ *        tenants.id
+ *
+ *     - Iska meaning: User ka tenantId kisi existing tenant ke id ko reference karega.
+ *
+ *     - Example: 
+ *       a. tenants
+ *          - id = 1
+ *          - name = "Restaurant A"
+ *
+ *       b. users
+ *          - id = 101
+ *          - email = "admin@a.com"
+ *          - tenantId = 1
+ *
+ *       c. Matlab: User 101 belongs to Tenant 1.
+ *
+ *
+ * 11. WHY FOREIGN KEY?
+ *     - Foreign key database level par relationship ko enforce karne mein help 
+ *       karti hai.
+ *     - Example: Agar tenantId = 999 hai aur tenants table mein id = 999 exist nahi
+ *       karta, to foreign-key constraint invalid reference ko prevent kar sakti hai.
+ *       Isse database integrity maintain hoti hai.
+ *
+ *
+ * 12. GENERATE FOREIGN KEY MIGRATION
+ *     - User entity mein @ManyToOne add karne ke baad:
+ *       npm run migration:generate -- src/migration/add_tenantId_foreign_key
+ *     - TypeORM difference detect karega:
+ *       a. OLD:
+ *
+ *          users
+ *          +----+---------+
+ *          | id | email   |
+ *          +----+---------+
+ *
+ *       b. NEW:
+ *
+ *          users
+ *          +----+---------+----------+
+ *          | id | email   | tenantId |
+ *          +----+---------+----------+
+ *
+ *      - Aur required migration generate karega.
+ *
+ *
+ * 13. RUN FOREIGN KEY MIGRATION
+ *     - Migration generate hone ke baad: npm run migration:run
+ *     - Ab database mein relationship create ho jayega.
+ *     - Final relationship:
+ *       +-----------------------+
+ *       | tenants               |
+ *       +-----------------------+
+ *       | id        PK          |
+ *       | name                  |
+ *       | address               |
+ *       | createdAt             |
+ *       | updatedAt             |
+ *       +-----------+-----------+
+ *                   |
+ *                   | 1
+ *                   |
+ *                   | MANY
+ *                   v
+ *       +-----------------------+
+ *       | users                 |
+ *       +-----------------------+
+ *       | id        PK          |
+ *       | firstName             |
+ *       | lastName              |
+ *       | email                 |
+ *       | password              |
+ *       | role                  |
+ *       | tenantId  FK          |
+ *       +-----------------------+
+ *
+ *
+ * 14. COMPLETE FLOW
+ * STEP 1: Create Tenant entity
+ *                  |
+ *                  v
+ * STEP 2: Generate migration
+ *         - npm run migration:generate -- src/migration/create_tenants_table
+ *                  |
+ *                  v
+ * STEP 3: Run migration
+ *         - npm run migration:run
+ *                  |
+ *                  v
+ *         - tenants table created
+ *                  |
+ *                  v
+ * STEP 4: Add relationship in User:
+ *         @ManyToOne(() => Tenant)
+ *         tenant: Tenant;
+ *                  |
+ *                  v
+ * STEP 5: Generate migration:
+ *         - npm run migration:generate -- src/migration/add_tenantId_foreign_key
+ *                  |
+ *                  v
+ * STEP 6: Run migration:
+ *         - npm run migration:run
+ *                  |
+ *                  v
+ *         - users.tenantId
+ *                  |
+ *                  v
+ *         - tenants.id
+ *
+ *
+ * 15. INTERVIEW QUESTIONS
+ *
+ *     Q1. What is a Tenant?
+ *     A: Tenant generally ek customer, company ya organization
+ *        ko represent karta hai jo SaaS application use karti hai.
+ *    
+ *     Q2. Why do we need a Tenant entity?
+ *     A: Multiple organizations ko same application mein logically
+ *        separate karne ke liye tenant concept use karte hain.
+ *    
+ *     Q3. What is the relationship between User and Tenant?
+ *     A:  One Tenant can have many Users.
+ *         Therefore:
+ *         - Tenant -> User
+ *         - One-to-Many
+ *    
+ *         User side se:
+ *         - User -> Tenant
+ *         - Many-to-One
+ *    
+ *     Q4. What does @ManyToOne(() => Tenant) mean?
+ *     A: Iska meaning hai ki multiple User records ek Tenant se belong kar sakte hain.
+ *    
+ *     Q5. Where is tenantId stored?
+ *     A: User-Tenant relationship ke liye users table mein generally tenantId
+ *        foreign-key column create hota hai.
+ *    
+ *         users.tenantId
+ *               |
+ *               v
+ *         tenants.id
+ *    
+ *    
+ *     Q6. What is a foreign key?
+ *     A: Foreign key ek table ke column ko doosri table ke primary key se link karti
+ *        hai aur relationship/data integrity maintain karne mein help karti hai.
+ *    
+ *     Q7. Why do we use migrations?
+ *     A: Database schema changes ko controlled, versioned aur repeatable way mein 
+ *        apply karne ke liye migrations use karte hain.
+ *    
+ *     Q8. Why do we generate migration after changing an entity?
+ *     A: Entity aur current database schema ke difference ko database changes mein
+ *        convert karne ke liye migration generate karte hain.
+ *    
+ *     Q9. What is the difference between migration:generate and migration:run?
+ *     A:  migration:generate : Migration file generate karta hai.
+ *         migration:run      : Pending migration ko database par execute karta hai.
+ *    
+ *     Q10. How would you explain this relationship in an interview?
+ *     A: - "We have a Tenant entity representing an organization.
+ *        - A tenant can have multiple users, so the User entity has a ManyToOne
+ *          relationship with Tenant. 
+ *        - TypeORM creates a tenantId foreign key in the users table referencing the
+ *          tenants table's primary key."
+ *
+ *
+ * QUICK REVISION
+ * 1. Tenant                   : Organization/customer
+ * 2. tenants.id               : Tenant primary key
+ * 3. User                     : Application user
+ * 4. @ManyToOne(() => Tenant) :  Many users belong to one tenant
+ * 5. tenantId                 : User ke tenant ko identify karta hai
+ * 6. Foreign Key              : users.tenantId -> tenants.id
+ * 7. migration:generate       : Migration file create
+ * 8. migration:run            : Migration database par execute
+ *
+ *
+ * ONE-LINE INTERVIEW ANSWER
+ * - "We introduced a Tenant entity for multi-tenancy and linked Users to Tenants 
+ *    using a ManyToOne relationship, where the users table contains a tenantId
+ *   foreign key referencing tenants.id."
  */
 ```
