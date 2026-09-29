@@ -12,6 +12,7 @@ import loginValidator from '../validators/login-validator.js';
 import { CredentialService } from '../services/CredentialService.js';
 import authenticate from '../middlewares/authenticate.js';
 import { AuthRequest } from '../types/index.js';
+import validateRefreshToken from '../middlewares/validateRefreshToken.js';
 
 const router = express.Router();
 const userRepository = AppDataSource.getRepository(User);
@@ -31,6 +32,10 @@ router.post('/login', loginValidator, (req: Request, res: Response, next: NextFu
 
 router.get('/self', authenticate, (req: Request, res: Response) =>
   authController.self(req as AuthRequest, res)
+);
+
+router.post('/refresh', validateRefreshToken, (req: Request, res: Response, next: NextFunction) =>
+  authController.refresh(req as AuthRequest, res, next)
 );
 
 export default router;

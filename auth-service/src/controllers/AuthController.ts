@@ -158,4 +158,55 @@ export class AuthController {
     const user = await this.userService.findById(Number(req.auth.sub));
     res.json({ user: { ...user, password: undefined } });
   }
+
+  async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const payload: JwtPayload = {
+        sub: req.auth.sub,
+        role: req.auth.role,
+      };
+
+      /* Generate Access Token */
+      const accessToken = this.tokenService.generateAccessToken(payload);
+
+      const user = await this.userService.findById(Number(req.auth.sub));
+      if (!user) {
+        const error = createHttpError(401, 'User with token could not find');
+        next(error);
+        return;
+      }
+
+      /* Delete Old Refresh Token & Generate + Persisting New Refresh Token */
+      const newRefreshToken = await this.tokenService.persistRefreshToken(user);
+
+      await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: String(newRefreshToken.id),
+      });
+
+      /* Adding Tokens to Cookies */
+      res.cookie('accessToken', accessToken, {
+        domain: 'localhost',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60, // 1h
+        httpOnly: true, // very important
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        domain: 'localhost',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1yr
+        httpOnly: true, // very important
+      });
+
+      /* Return the response (id) */
+      this.logger.info('User has been logged in', { id: user.id });
+      res.status(200).json({ id: user.id });
+    } catch (err) {
+      next(err);
+      return;
+    }
+  }
 }
